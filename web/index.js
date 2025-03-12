@@ -11,7 +11,11 @@ import PrivacyWebhookHandlers from "./privacy.js";
 import { syncSessions } from "./sync-sessions.js";
 
 import jwt from 'jsonwebtoken';
+import sqlite3 from 'sqlite3';
+import { open } from 'sqlite';
 
+// Path to your SQLite database file
+const DB_PATH = './database.sqlite';
 
 const PORT = parseInt(
   process.env.BACKEND_PORT || process.env.PORT || "3000",
@@ -82,19 +86,41 @@ app.post("/api/products", async (_req, res) => {
   }
   res.status(status).send({ success: status === 200, error });
 });
-// New route to return SSO token as JSON
-app.get('/api/sso-token', (req, res) => {
-  // Hardcode shop URL for testing (or use session if available)
-  const shop = (req.session && req.session.tenant && req.session.tenant.shopify_store_url) || "16255281.myshopify.com";
-  
-  // Generate a short‑lived JWT token with the shop URL
-  const token = jwt.sign(
-    { shop },
-    process.env.SSO_SECRET || "yourSuperSecretKeyForSSO",
-    { expiresIn: '5m' }
-  );
-  
-  res.json({ token, shop });
+
+// ✅ Properly Initialize Database Connection
+let db;
+async function initDB() {
+  db = await open({
+    filename: DB_PATH,
+    driver: sqlite3.Database,
+  });
+}
+await initDB(); // ✅ Call async function at startup
+
+// ✅ New route to return SSO token as JSON
+app.get('/api/sso-token', async (req, res) => {
+  try {
+    // Query the database asynchronously to fetch the shop dynamically
+    const tenant = await db.get("SELECT shop FROM shopify_sessions LIMIT 1");
+
+    if (!tenant || !tenant.shop) {
+      return res.status(404).json({ error: "No Shopify store found in database" });
+    }
+
+    const shop = tenant.shop; // Get the store URL from database
+
+    // Generate a short-lived JWT token with the shop URL
+    const token = jwt.sign(
+      { shop },
+      process.env.SSO_SECRET || "yourSuperSecretKeyForSSO",
+      { expiresIn: '5m' }
+    );
+
+    res.json({ token, shop });
+  } catch (error) {
+    console.error("Error fetching shop from database:", error);
+    res.status(500).json({ error: "Internal server error" });
+  }
 });
 
 

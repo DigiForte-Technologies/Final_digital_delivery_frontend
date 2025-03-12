@@ -1,29 +1,18 @@
 import { Routes as ReactRouterRoutes, Route } from "react-router-dom";
+import HomePage from "./pages/index.jsx"; // Ensure HomePage is loaded
 
-/**
- * File-based routing.
- * @desc File-based routing that uses React Router under the hood.
- * To create a new route create a new .jsx file in `/pages` with a default export.
- *
- * Some examples:
- * * `/pages/index.jsx` matches `/`
- * * `/pages/blog/[id].jsx` matches `/blog/123`
- * * `/pages/[...catchAll].jsx` matches any URL not explicitly matched
- *
- * @param {object} pages value of import.meta.glob(). See https://vitejs.dev/guide/features.html#glob-import
- *
- * @return {Routes} `<Routes/>` from React Router, with a `<Route/>` for each file in `pages`
- */
 export default function Routes({ pages }) {
   const routes = useRoutes(pages);
   const routeComponents = routes.map(({ path, component: Component }) => (
     <Route key={path} path={path} element={<Component />} />
   ));
 
-  const NotFound = routes.find(({ path }) => path === "/notFound").component;
+  // Fallback 404 Page (If a NotFound page doesn't exist)
+  const NotFound = routes.find(({ path }) => path === "/notFound")?.component || (() => <h1>404 - Page Not Found</h1>);
 
   return (
     <ReactRouterRoutes>
+      <Route path="/" element={<HomePage />} /> {/* ✅ Ensure HomePage is default */}
       {routeComponents}
       <Route path="*" element={<NotFound />} />
     </ReactRouterRoutes>
@@ -36,18 +25,8 @@ function useRoutes(pages) {
       let path = key
         .replace("./pages", "")
         .replace(/\.(t|j)sx?$/, "")
-        /**
-         * Replace /index with /
-         */
         .replace(/\/index$/i, "/")
-        /**
-         * Only lowercase the first letter. This allows the developer to use camelCase
-         * dynamic paths while ensuring their standard routes are normalized to lowercase.
-         */
         .replace(/\b[A-Z]/, (firstLetter) => firstLetter.toLowerCase())
-        /**
-         * Convert /[handle].jsx and /[...handle].jsx to /:handle.jsx for react-router-dom
-         */
         .replace(/\[(?:[.]{3})?(\w+?)\]/g, (_match, param) => `:${param}`);
 
       if (path.endsWith("/") && path !== "/") {

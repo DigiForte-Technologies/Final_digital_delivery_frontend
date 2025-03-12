@@ -1,59 +1,35 @@
 import {
   reactExtension,
   Banner,
+  useOrder,
+  Button,
   BlockStack,
-  Checkbox,
   Text,
-  useApi,
-  useApplyAttributeChange,
-  useInstructions,
-  useTranslate,
-} from "@shopify/ui-extensions-react/checkout";
+} from '@shopify/ui-extensions-react/checkout';
 
-// 1. Choose an extension target
-export default reactExtension("purchase.checkout.block.render", () => (
-  <Extension />
-));
+export default reactExtension(
+  'customer-account.order-status.block.render',
+  () => <Extension />,
+);
 
 function Extension() {
-  const translate = useTranslate();
-  const { extension } = useApi();
-  const instructions = useInstructions();
-  const applyAttributeChange = useApplyAttributeChange();
+  const order = useOrder();
 
+  if (order) {
+    // Extract the numeric part from the full order ID string
+    const orderIdFull = order.id; // e.g., "gid://shopify/OrderIdentity/6993004167230"
+    const cleanOrderId = orderIdFull.split('/').pop();
+    const downloadUrl = `https://shopify-digital-download.fly.dev/orders/${cleanOrderId}`;
 
-  // 2. Check instructions for feature availability, see https://shopify.dev/docs/api/checkout-ui-extensions/apis/cart-instructions for details
-  if (!instructions.attributes.canUpdateAttributes) {
-    // For checkouts such as draft order invoices, cart attributes may not be allowed
-    // Consider rendering a fallback UI or nothing at all, if the feature is unavailable
     return (
-      <Banner title="checkout-ui" status="warning">
-        {translate("attributeChangesAreNotSupported")}
+      <Banner status="info">
+        <BlockStack gap="4">
+          <Text>Your Puchase is Ready to Download:</Text>
+          <Button to={downloadUrl}>Download Order</Button>
+        </BlockStack>
       </Banner>
     );
   }
 
-  // 3. Render a UI
-  return (
-    <BlockStack border={"dotted"} padding={"tight"}>
-      <Banner title="checkout-ui">
-        {translate("welcome", {
-          target: <Text emphasis="italic">{extension.target}</Text>,
-        })}
-      </Banner>
-      <Checkbox onChange={onCheckboxChange}>
-        {translate("iWouldLikeAFreeGiftWithMyOrder")}
-      </Checkbox>
-    </BlockStack>
-  );
-
-  async function onCheckboxChange(isChecked) {
-    // 4. Call the API to modify checkout
-    const result = await applyAttributeChange({
-      key: "requestedFreeGift",
-      type: "updateAttribute",
-      value: isChecked ? "yes" : "no",
-    });
-    console.log("applyAttributeChange result", result);
-  }
+  return null;
 }

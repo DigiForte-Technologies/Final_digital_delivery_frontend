@@ -1,7 +1,7 @@
 # Learn more about configuring your app at https://shopify.dev/docs/apps/tools/cli/configuration
 
 client_id = "24bac162113225d71e4c458f5e51e049"
-application_url = "https://suffered-duke-cover-convertible.trycloudflare.com"
+application_url = "https://kiss-webshots-accurate-threats.trycloudflare.com"
 embedded = true
 name = "digital_download_v2"
 handle = "digital_download_v2"
@@ -19,9 +19,9 @@ scopes = "write_products"
 
 [auth]
 redirect_urls = [
-  "https://suffered-duke-cover-convertible.trycloudflare.com/auth/callback",
-  "https://suffered-duke-cover-convertible.trycloudflare.com/auth/shopify/callback",
-  "https://suffered-duke-cover-convertible.trycloudflare.com/api/auth/callback"
+  "https://kiss-webshots-accurate-threats.trycloudflare.com/auth/callback",
+  "https://kiss-webshots-accurate-threats.trycloudflare.com/auth/shopify/callback",
+  "https://kiss-webshots-accurate-threats.trycloudflare.com/api/auth/callback"
 ]
 
 [pos]
