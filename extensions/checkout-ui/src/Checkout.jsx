@@ -24,7 +24,7 @@ function Extension() {
     return (
       <Banner status="info">
         <BlockStack gap="4">
-          <Text>Your Puchase is Ready to Download:</Text>
+          <Text>Your Puchase is Ready to Download</Text>
           <Button to={downloadUrl}>Download Order</Button>
         </BlockStack>
       </Banner>
